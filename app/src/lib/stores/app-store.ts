@@ -6495,12 +6495,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
   }
 
   private async createStashEntry(repository: Repository, branch: Branch) {
-    const stashEntry = await getLastDesktopStashEntryForBranch(repository, branch)
-    
-    if (stashEntry !== null) {
-      await this._popStashEntry(repository, stashEntry)
-    }
-
     const { changesState } = this.repositoryStateCache.get(repository)
     const { workingDirectory } = changesState
     const untrackedFiles = getUntrackedFiles(workingDirectory)
@@ -6509,20 +6503,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
   }
 
   private async createStashEntries(repository: Repository, branch: Branch, files: ReadonlyArray<WorkingDirectoryFileChange>) {
-    const { changesState } = this.repositoryStateCache.get(repository)
-    const { workingDirectory } = changesState
-
-    const stashEntry = await getLastDesktopStashEntryForBranch(repository, branch)
-    
-    if (stashEntry !== null) {
-      await this._popStashEntry(repository, stashEntry)
-    }
-
-    const newChangesState = this.repositoryStateCache.get(repository).changesState
-    const newWorkingDirectory = newChangesState.workingDirectory
-    const stashPoppedFiles = newWorkingDirectory.files.filter(stashFile => workingDirectory.files.findIndex(file => file.path === stashFile.path) === -1)
-
-    return createDesktopStashEntry(repository, branch, [...files, ...stashPoppedFiles])
+    return createDesktopStashEntry(repository, branch, files)
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */
